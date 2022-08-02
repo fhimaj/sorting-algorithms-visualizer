@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>About</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+
+    <body>
+        <h2 style="color:orange"><span style="color:black">&nbsp;&nbsp;&nbsp;&nbsp;About &nbsp;</span><a class="aTitle" href="index.html">Sorting Algorithms Visualizer</a></h2>
+        <hr>
+
+        <div class="bookmarks">
+            <ul>
+                <li><a href="#whatSav">What is Sorting Algorithms Visualizer?</a></li>
+                <li><a href="#sortingAlgos">Sorting Algorithms</a>
+                    <ul>
+                        <li><a href="#selection-sort">Selection Sort</a></li>
+                        <li><a href="#bubble-sort">Bubble Sort</a></li>
+                        <li><a href="#insertion-sort">Insertion Sort</a></li>
+                        <li><a href="#quick-sort">Quick Sort</a></li>
+                        <li><a href="#merge-sort">Merge Sort</a></li>
+                    </ul>
+                </li>
+                <li><a href="#howto">How to use it?</a></li>                
+                <li><a href="#other">Other</a></li>
+                <li><a href="#about">About the author</a></li>
+            </ul>
+        </div>
+        <div class="docs">
+            <a id="whatSav"><h3>1. What is Sorting Algorithms Visualizer?</h3></a>
+            <p>Sorting Algorithms Visualizer is a simple sorting algorithms visualizer, as the name says, which is build using HTML,CSS,JS and SVG.
+                It is an attempt to show how some of the simplest sorting algorithms visually work.
+            </p>
+            <a id="sortingAlgos"><h3>2. Sorting Algorithms</h3></a>
+            <p>There are 5 sorting algorithms which I have tried to visualize:<br>
+                Selection Sort, Bubble Sort, Insertion Sort, Quick Sort and Merge Sort.
+            </p>
+            <ul>
+                <a id="selection-sort"><h4>2.1 Selection Sort</h4></a>
+                <p>Selection sort is an in-place comparison sorting algorithm. It has an O(n2) time complexity, which makes it inefficient on large lists, and generally performs worse than the similar insertion sort. 
+                    Selection sort is noted for its simplicity and has performance advantages over more complicated algorithms in certain situations, particularly where auxiliary memory is limited.
+                    The algorithm divides the input list into two parts: a sorted sublist of items which is built up from left to right at the front (left) of the list and a sublist of the remaining unsorted items that occupy the rest of the list. 
+                    Initially, the sorted sublist is empty and the unsorted sublist is the entire input list. The algorithm proceeds by finding the smallest (or largest, depending on sorting order) element in the unsorted sublist, exchanging (swapping) it with the leftmost unsorted element (putting it in sorted order), and moving the sublist boundaries one element to the right.</p>
+                <a id="bubble-sort"><h4>2.2 Bubble Sort</h4></a>
+                <p>Bubble Sort is the simplest sorting algorithm that works by repeatedly swapping the adjacent elements if they are in the wrong order. 
+                This algorithm is not suitable for large data sets as its average and worst-case time complexity is quite high. It has an O(n2) time complexity.</p>
+                <a id="insertion-sort"><h4>2.3 Insertion Sort</h4></a>
+                <p>Insertion sort is a simple sorting algorithm that builds the final sorted array (or list) one item at a time. It is much less efficient on large lists than more advanced algorithms such as quicksort, heapsort, or merge sort. 
+                    It has O(n2) worst case time-complexity and O(n) best case time-complexity.
+                </p>
+                <a id="quick-sort"><h4>2.4 Quick Sort</h4></a>
+                <p>Quicksort is a divide-and-conquer algorithm. It works by selecting a 'pivot' element from the array and partitioning the other elements into two sub-arrays, according to whether they are less than or greater than the pivot. For this reason, it is sometimes called partition-exchange sort.[4] The sub-arrays are then sorted recursively. 
+                    This can be done in-place, requiring small additional amounts of memory to perform the sorting. It has O(n2) worst case time-complexity, O(nlogn) average and best case time-complexity. 
+                    <br>In our implementatin of Quick Sort the pivot selected is the first element.
+                </p>
+                <a id="merge-sort"><h4>2.5 Merge Sort</h4></a>
+                <p>Merge sort is an efficient, general-purpose, and comparison-based sorting algorithm. Most implementations produce a stable sort, which means that the order of equal elements is the same in the input and output.
+                    Merge Sort is a divide and conquer algorithm.<br>
+                    Conceptually, a merge sort works as follows:
+                    <ul>
+                    <li>Divide the unsorted list into n sublists, each containing one element (a list of one element is considered sorted).</li>
+                    <li>Repeatedly merge sublists to produce new sorted sublists until there is only one sublist remaining. This will be the sorted list.</li>
+                    </ul><br>
+                    It has O(nlogn) worst case time-complexity, O(nlogn) or O(n) in best case time-complexity, and O(nlogn) average case time-complexity.
+                </p>
+            </ul>
+            <a id="howto"><h3>3. How to use it?</h3></a>
+            <p>The Sorting Algorithms Visualizer is quite simple to use.
+                You have two options to choose the array you wish to see the sorting process of. You can generate a random array (by clicking the <i><strong>'Generate Random Array'</strong></i>)
+                or you can input an array of your choice (by adding elements at the <i><strong>'Add custom array textbox'</strong></i> and clicking <i><strong>'Generate custom array'</strong></i> button). The custom array you input, has some limitations, imposed by me, because of the limits of drawing Rects SVG elements.<br>
+                Those limitations include : You can't input more than 40 elements; All elements need to be separated by space.The value of elements must be in the range of [0,999];
+                <br>
+                <br>
+                After you choose the array you, you can choose the sorting algorithm, the working process of which you want to visualize. By default <i><strong>Selection Sort</strong></i> is chosen.
+                After you choose the sorting algorithm, you can choose the speed of the animation, by using the slider. <br>
+                To start the sorting process, you just have to click the Start button &#x23F5; . If you wish to pause the animation, you can simply click the pause button &#x23F8;&#xfe0e;. If you want to jump at the end, and see the sorted array
+                , you can simply click the jump-to-end button &#x23ED;. <br>
+                If during sorting, you wish to change the animation speed, you can simply pause(&#x23F8;&#xfe0e;) the sorting animation, change the speed using the animation slider,
+                and just click continue (&#x23F5;). If you wish to reset the page, you can just click the <i><strong>Reset All</strong></i> button.
+            </p>
+            <a id="other"><h3>4. Other</h3></a>
+            <p></p>
+            <a id="about"><h3>5. About</h3></a>
+            <p>Contact or learn more about the author: <a href="https://www.github.com/fhimaj">fhimaj</a></p>
+        </div>
+    </body>
+</html>

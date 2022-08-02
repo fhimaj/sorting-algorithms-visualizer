@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<!--Sorting Algorithms Visualizer-->
+<!--github: @fhimaj-->
+<html>
+<head>
+	<title>Sorting Algorithms Visualizer</title>
+	<link rel="stylesheet" href="style.css">
+	<link xmlns="http://www.w3.org/2000/svg">
+</head>
+
+<body>
+	<h1 style="color:#DDB620"> <center>Sorting Algorithms Visualizer</center></h1>
+	<div class="buttons">
+		<center>
+		
+		<form>
+			<label for="Array length">Array's length:</label>
+			<select name="arrLength" onchange="setArrLength(this.value)" id="arrLength">
+				<option value="10">10</option>
+				<option value="20" selected>20</option>
+				<option value="30">30</option>
+				<option value="40">40</option>
+			</select>
+			<input id="selectButton" type="button" value="Generate a random array" onclick="generateMyArray()">
+		</form>	OR
+		<form name="customForm">
+			<label>
+				<div class="tooltip">Add custom array*: 
+					<span class="tooltiptext">Values should be integers only [0-999], separated by space. No other characters allowed. Maximum of 40 integers (4 82 23 999 1...)</span>
+				</div>
+			</label>
+			<input type="text" id="customArr" placeholder="14 2 6 ... (max. length=40)">
+			<input type="button" id="selectButton" name="customArr" value="Generate custom array" onclick="addCustomArrValidate()">
+			<br>
+		</form>	<br>
+		<form id="sortForm" >
+		<label for="SortForm">Sorting Algorithm:</label>
+			<select name="sortingAlgo" id="sortingAlgo" onchange="setSortingAlgorithm(this.value)">
+				<option value="1">Selection Sort</option>
+				<option value="2">Insertion Sort</option>
+				<option value="3">Bubble Sort</option>
+				<option value="4">Quick Sort</option>
+				<option value="5">Merge Sort</option>
+			</select>
+		</form>
+		<br>
+		
+		<form>
+			<label style="margin-left:100px;" for="Animation Speed">
+			<div class="tooltip">Animation Speed*: 
+				<span class="tooltiptext">To change animation speed: <br>1. Pause the animation first [&#x23F8;&#xfe0e;]<br>2. Change the speed using slider <br>3. Continue animation [&#x23F5;]</span>
+			</div>
+			</label>
+			<span style="color:#DDB620;font-size: 12px;">fast</span><input type="range" min="0" max="1000" value="500" step="25" class="speedSlider" id="myRange"><span style="color:#DDB620;font-size: 12px;">slow</span>
+		
+			<!--<input id="selectButton" type="button" value="Start sorting" onclick="generateSortingArray()" style="background-color:green;margin-left: 10px;color:white">
+			&nbsp&nbsp&nbsp-->
+
+			<input class="slideButtons" id="selectButton" type="button" value="&#x23F5;" onclick="continueSorting()" ><!--start sorting-->
+			<input class="slideButtons" id="selectButton" type="button" value="&#x23F8;&#xfe0e;" onclick="pause()">
+			<input class="slideButtons" id="selectButton" type="button" value="&#x23ED;" onclick="jumpToEnd()">
+			<input id="selectButton" type="button" value="Reset All" onclick="window.location.reload()">
+		</form>
+		
+		
+		</center>
+	</div>
+	<div class="content">
+		<div id="svgDiv">
+			<svg id="sortSvg">		
+		
+			</svg>
+		</div>
+
+		<div class="footer">
+			<hr>
+			<center><a href="about.html">About</a>&nbsp;&nbsp;
+				<a href="https://www.github.com/fhimaj">GitHub</a>
+				
+			</center>
+		</div>
+	</div>
+	
+
+	<script>
+		let svgClone=document.getElementById("sortSvg");//get a copy of empty svg
+		let toDrawArr=createArray(0);//create 2d array for containing the states of array - while sorting,for future drawing
+		var stopId;//use the setInterval() id to stop the function when needed
+		let markIndexes=[];/*array of indexes of the swapped elements during sorting-- 2 indexes (i,i+1) per sorting state.
+		Each array in toDrawArr has 2 indexes(markers) from markIndexes - helpful for showing which elements are swapped
+		while drawing the temporary array*/
+		let pivotQuickSortMarkers=[];//store pivot position during quick sort
+
+		let intSpeed=800; //initial call speed of setInterval();
+		let sortSelection=1;//defalult selected sorting algorithm
+		let enabled=false;//state of 'clickable' function of 'pause' and 'continue' buttons
+
+		//state variables help us to check multiple button clicks, so we don't have Exceptions thrown or unwanted functions being executed during sorting
+		let runningState=false;//set running state of the drawing function drawRectsSorting()
+		let clickedState=false;//set running state of the drawing function generateSortingArray()
+		let arrayWasGenerated=false;
+		let arrLength=getArrLength();//default value
+		let maxValue=0;/*max value of the array*/
+		//set arrays length
+		function setArrLength(val){
+			arrLength=val;
+		}
+
+		let array=[arrLength];
+		let sortedArray=[arrLength];
+		let sortedArrayCopy=[];
+
+		function generateMyArray(){	
+			arrayWasGenerated=true;
+			firstCall=false;
+			//reset the svg before redrawing
+			resetChart();
+			//generate the array and sort it
+			generateArray();
+			//find max value -  helpful when drawing 'rects' on svg, need to know max value, so we can draw smaller rects proportional to the max value
+			maxValue=findMax();
+			drawRects(array);
+			toDrawArr=createArray(0);
+			clearInterval(stopId);//stops drawing arrays' states incase button is clicked while being drawn	
+			//reset index of arrays marker in toDrawArray and markIndexes array
+			index=0;
+			markIndexes=[];
+			pivotQuickSortMarkers=[];
+			marker=0;
+			pivotMarker=-1;
+			runningState=false;
+			clickedState=false;
+			paused=false;
+			
+
+		}
+		//generates custom array from user input
+		function generateMyCustomArray(customArr){
+			arrayWasGenerated=true;
+			firstCall=false;
+			//reset the svg before redrawing
+			resetChart();
+			//generate the array and sort it
+			array=customArr;
+			//find the max value -  helpful when drawing 'rects' on svg, need to know max value, so we can draw smaller rects proportional to the max value
+			maxValue=findMax();
+			drawRects(array);
+			toDrawArr=createArray(0);
+			clearInterval(stopId);//stops drawing arrays' states incase button is clicked while being drawn	
+			//reset index of arrays marker in toDrawArray and markIndexes array
+			index=0;
+			markIndexes=[];
+			pivotQuickSortMarkers=[];
+			marker=0;
+			pivotMarker=-1;
+			runningState=false;
+			clickedState=false;
+			paused=false;
+			arrLength=getArrLength();
+			
+		}
+
+		function resetChart(){
+			//reset the svg to original empty state
+			let s=document.getElementById("sortSvg");
+			s.innerHTML=svgClone;
+		}
+
+		let min=0;//percaktimi i kufijve te rangut te numrave qe shfrytezohen per gjenerim te rendomte
+		let max=999;
+
+		//fn qe gjeneron vlera te rendomta per nje varg
+		function generateArray(){
+			for(let i=0;i<arrLength;i++){
+				array[i]=generateArrayValue(min,max);
+				//kontrollimi per duplikate per poziten paraprake
+				//tentim i zvogelimit te vlerave duplikate por jo eleminimit total
+				if(array[i]==array[i-1] || array[i]==array[i-2] || array[i]==array[i-3]){
+					array[i]=generateArrayValue(min,max);
+				}
+			}
+		}
+		function generateArrayValue(){
+			return Math.floor(Math.random()*(max-min)+min);
+		}
+		//used to find the max value - can be whatever sorting algorithm
+		function findMax(){
+			let maximumValue=0;
+			for(let i=0;i<arrLength;i++){
+				if(array[i]>maximumValue){
+					maximumValue=array[i];
+				}
+			}
+			return maximumValue;	
+		}
+
+		//draw unsorted array
+		function drawRects(myArray){
+			let barColor="#DDB620";
+
+			for(let i=0;i<arrLength;i++){
+				let ele=document.createElementNS("http://www.w3.org/2000/svg","rect");
+				ele.setAttribute("class","rects");
+				ele.setAttribute("id","rect");
+				ele.style.height=(myArray[i]/maxValue)*450+1;//set the width based on the difference between this element and the max value element
+				ele.style.fill=barColor;
+				ele.style.x=20*i;
+				//adding text above rect
+				let txt=document.createElementNS("http://www.w3.org/2000/svg","text");
+				txt.setAttribute("class","txt-label");
+
+				txt.setAttribute('x',20*i);
+				txt.setAttribute('y',8);
+				txt.textContent=myArray[i];
+				txt.setAttribute('font-size', '11');
+				txt.setAttribute('fill','black');
+				
+
+				let g=document.createElementNS("http://www.w3.org/2000/svg","g");
+				g.setAttribute("class","g");
+				g.appendChild(ele);
+				g.appendChild(txt);
+				document.getElementById("sortSvg").appendChild(g);			
+			}
+		}
+
+		var m=n=0;
+		var previousN=0;
+
+		//draw sorting states - arrays from toDrawArr[][]
+		//TODO: add minimum parameter for insertion sort; add pivot parameter for heap sort;
+		function drawRectsSorting(myArray,m,n, pivotQuickSort){
+			let barColor="#DDB620";
+
+			for(let i=0;i<arrLength;i++){
+				
+				let ele=document.createElementNS("http://www.w3.org/2000/svg","rect");
+				ele.setAttribute("class","rects");
+				ele.setAttribute("id","rect");
+				ele.style.height=(myArray[i]/maxValue)*450+1;//set the width based on the difference between this element and the max value element
+				if(index-1==toDrawArr.length-1){//if it's last state of array(sorted array), draw green rects
+					barColor="green";//we use:index-1, because fn generateSortingArray() increases index +1 every time it uses fn setInterval, so at the last call, 'index' is increased outside limits of toDrawArray() 
+					}
+				else{
+					
+					if(i==pivotQuickSort){
+						barColor="red";
+					}
+					else if(i==m && m!=pivotQuickSort) {
+					barColor="#EEEEEE ";
+					}
+					else if(i==n){
+						barColor="green";
+					}
+					else {
+					barColor="#DDB620";
+					}
+									
+				}
+				ele.style.fill=barColor;
+				ele.style.x=20*i;
+				//adding numbers above rect
+				let txt=document.createElementNS("http://www.w3.org/2000/svg","text");
+				txt.setAttribute("class","txt-label");
+
+				txt.setAttribute('x',20*i);
+				txt.setAttribute('y',8);
+				txt.textContent=myArray[i];
+				txt.setAttribute('font-size', '10');
+				txt.setAttribute('fill','black');
+
+				let g=document.createElementNS("http://www.w3.org/2000/svg","g");
+				g.setAttribute("class","g");
+				g.appendChild(ele);
+				document.getElementById("sortSvg").appendChild(g);
+				g.appendChild(txt);
+				
+			}
+		}
+		
+		//bubble sort modified - adds states of array while being sorted to toDrawArr[][]
+		function bubbleSort(){
+			sortedArray=[]//reset sortedArray - ***do this for all	sorting algorithms
+			sortedArray=Array.from(array);//kopjimi i vargut array ne sortedArray
+
+			for(let i=0;i<arrLength-1;i++){
+				for(let j=0;j<arrLength-i-1;j++){
+					//push a copy before any sorting
+					let tempArr=sortedArray.slice();//get a copy of the state of array
+					toDrawArr.push(tempArr);//didnt work before because of object-referencing!
+					markIndexes.push(j);//mark indexes that change during sorting	
+					markIndexes.push(j+1);//purpose: draw different colors for elements being swapped	.
+					if(sortedArray[j]>sortedArray[j+1]){
+						let x=sortedArray[j];
+						sortedArray[j]=sortedArray[j+1];
+						sortedArray[j+1]=x;
+					}
+					//push a copy after sorting
+					tempArr=sortedArray.slice();//get a copy of the state of array
+					toDrawArr.push(tempArr);//didnt work before because of object-referencing!
+					markIndexes.push(j+1);//mark indexes that change during sorting	
+					markIndexes.push(j);//purpose: draw different colors for elements being swapped			
+		
+					
+				}
+			}	
+		}
+		//insertion sort modified - adds states of array while being sorted to toDrawArr[][]
+		function insertionSort(){
+			sortedArray=[]//reset sortedArray - ***do this for all	sorting algorithms
+			sortedArray=Array.from(array);//kopjimi i vargut array ne sortedArray
+			let i,j,temp;
+			for(i=1;i<arrLength;i++){
+				temp=sortedArray[i];
+				let indexSwap=i;
+				let j=i-1;
+				tempArr=sortedArray.slice();//modified
+				toDrawArr.push(tempArr);//...
+				markIndexes.push(j);//...
+				markIndexes.push(indexSwap);//modified
+
+				while(j>=0 && temp<sortedArray[j]){//[3,2,4,5,1,23,2,4]
+					tempArr=sortedArray.slice();//modified
+					toDrawArr.push(tempArr);//...
+					markIndexes.push(j);//...
+					markIndexes.push(indexSwap);//modified
+					//if(temp<sortedArray[j]){
+					let t=sortedArray[j];
+					sortedArray[j]=temp;
+					sortedArray[indexSwap]=t;
+					temp=sortedArray[j];
+
+					tempArr=sortedArray.slice();
+					toDrawArr.push(tempArr);
+					markIndexes.push(indexSwap);
+					markIndexes.push(j);
+
+					indexSwap=j;
+					j--;
+				}
+
+			}
+		}
+		//selection sort modified
+		function selectionSort() { 
+			sortedArray=[]//reset sortedArray - ***do this for all	sorting algorithms
+			sortedArray=Array.from(array);//kopjimi i vargut array ne sortedArray
+			let i,j,temp;
+		
+			for(i = 0; i < arrLength; i++) {
+				// Finding the smallest number in the subarray
+				let min = i;
+				for(let j = i+1; j < arrLength; j++){
+					tempArr=sortedArray.slice();//save a snapshot of array
+					toDrawArr.push(tempArr);
+					markIndexes.push(j);
+					markIndexes.push(min); 
+					if(sortedArray[j] < sortedArray[min]) {
+						min=j;
+					}
+				}
+				//push another copy after finding minimum
+				tempArr=sortedArray.slice();
+				toDrawArr.push(tempArr);
+				markIndexes.push(min);
+				markIndexes.push(i); 
+				if (min != i) {
+					// Swapping the elements
+					temp = sortedArray[i]; 
+					sortedArray[i] = sortedArray[min];
+					sortedArray[min] = temp;     
+					//save a snapshot of array after swapping
+					tempArr=sortedArray.slice();
+					toDrawArr.push(tempArr);
+					markIndexes.push(min);
+					markIndexes.push(i); 
+				}
+			}
+			
+		}
+		//WORKING VERSION - just needs some tinkering for better animation -has overlapping issue at drawing colors when swapping pivot with value found
+		/*************quick sort version2 *///////////
+		//quick sort with pivot as first element
+		function quickSortVersion2(arrayQ, first, last ){
+			let pivot,i,j,temp,tempArr;
+		
+			if(first<last){
+				pivot=first;
+				i=first;
+				j=last;
+
+				tempArr=arrayQ.slice();//save a snapshot of array
+				toDrawArr.push(tempArr);
+				markIndexes.push(i);
+				markIndexes.push(j);
+				pivotQuickSortMarkers.push(pivot);
+
+				while(i<j){
+					while(arrayQ[i] <= arrayQ[pivot] && i<last){
+						i+=1;
+						
+						tempArr=arrayQ.slice();//save a snapshot of array
+						toDrawArr.push(tempArr);
+						markIndexes.push(i);
+						markIndexes.push(j);
+						pivotQuickSortMarkers.push(pivot);
+					}
+					while(arrayQ[j] > arrayQ[pivot]){
+						j-=1;
+							
+						tempArr=arrayQ.slice();//save a snapshot of array
+						toDrawArr.push(tempArr);
+						markIndexes.push(i);
+						markIndexes.push(j);
+						pivotQuickSortMarkers.push(pivot);
+					}
+					if(i<j){
+						tempArr=arrayQ.slice();//save a snapshot of array
+						toDrawArr.push(tempArr);
+						markIndexes.push(i);
+						markIndexes.push(j);
+						pivotQuickSortMarkers.push(pivot);
+
+						temp=arrayQ[i];
+						arrayQ[i]=arrayQ[j];
+						arrayQ[j]=temp;
+										
+						tempArr=arrayQ.slice();//save a snapshot of array
+						toDrawArr.push(tempArr);
+						markIndexes.push(j);
+						markIndexes.push(i);
+						pivotQuickSortMarkers.push(pivot);
+					}
+				}
+			tempArr=arrayQ.slice();//save a snapshot of array
+			toDrawArr.push(tempArr);
+			markIndexes.push(i);
+			markIndexes.push(j);
+			pivotQuickSortMarkers.push(pivot);
+
+			temp=arrayQ[pivot];
+			arrayQ[pivot]=arrayQ[j];
+			arrayQ[j]=temp;
+				
+			tempArr=arrayQ.slice();//save a snapshot of array
+			toDrawArr.push(tempArr);
+			markIndexes.push(i);
+			markIndexes.push(pivot);
+			pivotQuickSortMarkers.push(j);
+
+			quickSortVersion2(arrayQ,first,j-1);
+			quickSortVersion2(arrayQ,j+1,last);
+			}
+		}
+
+		function quickSort(){
+			sortedArray=[]//reset sortedArray - ***do this for all	sorting algorithms
+			sortedArray=Array.from(array);//kopjimi i vargut array ne sortedArray
+			let low=0;
+			let high=arrLength-1;
+			quickSortVersion2(sortedArray,low, high);
+		}
+
+		/****************quick sort*******************/
+
+		/*** merge sort implemenation - modified version ***/
+		/**not quite perfect, even thought it shows visually how it is done, cant show detailed step by step because of overhead values**/
+		//to look good - needs to be implemented inplaceMergeSort - but that has different Time Complexity
+		//because of the limits of drawing rects inplace - but it still looks kinda good
+		function merge(arrM, l, m, r){
+			let tempArr;
+			var n1 = m - l + 1;
+			var n2 = r - m;
+		
+			// Create temp arrays
+			var leftArr = new Array(n1);
+			var rightArr = new Array(n2);
+		
+			// Copy data to temp arrays leftArr[] and rightArr[]
+			for (var i = 0; i < n1; i++)
+				leftArr[i] = arrM[l + i];
+			for (var j = 0; j < n2; j++)
+				rightArr[j] = arrM[m + 1 + j];
+		
+			// Merge the temp arrays back into arrM[l..r]
+		
+			var i = 0;// Initial index of first subarray
+			var j = 0;// Initial index of second subarray
+			var k = l;// Initial index of merged subarray
+
+			tempArr=arrM.slice();//save a snapshot of array
+			toDrawArr.push(tempArr);
+			markIndexes.push(i);
+			markIndexes.push(j);
+		
+			while (i < n1 && j < n2) {
+				tempArr=arrM.slice();//save a snapshot of array
+				toDrawArr.push(tempArr);
+				markIndexes.push(i);
+				markIndexes.push(j);
+				if (leftArr[i] <= rightArr[j]) {
+					arrM[k] = leftArr[i];
+					tempArr=arrM.slice();//save a snapshot of array
+					toDrawArr.push(tempArr);
+					markIndexes.push(k);
+					markIndexes.push(i);
+					i++;
+				}
+				else {
+					arrM[k] = rightArr[j];
+					tempArr=arrM.slice();//save a snapshot of array
+					toDrawArr.push(tempArr);
+					markIndexes.push(j);
+					markIndexes.push(k);
+					j++;
+				}
+				k++;
+			}
+		
+			// Copy the remaining elements of
+			// leftArr[], if there are any
+			while (i < n1) {
+				tempArr=arrM.slice();//save a snapshot of array
+				toDrawArr.push(tempArr);
+				markIndexes.push(i);
+				markIndexes.push(k);
+				arrM[k] = leftArr[i];
+				tempArr=arrM.slice();//save a snapshot of array
+				toDrawArr.push(tempArr);
+				markIndexes.push(k);
+				markIndexes.push(i);
+				i++;
+				k++;
+			}
+		
+			// Copy the remaining elements of
+			// rightArr[], if there are any
+			while (j < n2) {
+				tempArr=arrM.slice();//save a snapshot of array
+				toDrawArr.push(tempArr);
+				markIndexes.push(j);
+				markIndexes.push(k);
+				arrM[k] = rightArr[j];
+				tempArr=arrM.slice();//save a snapshot of array
+				toDrawArr.push(tempArr);
+				markIndexes.push(k);
+				markIndexes.push(j);
+				j++;
+				k++;
+			}
+		}
+		
+		// l is for left index and r is
+		// right index of the sub-array
+		// of arrM to be sorted */
+		function mergeSortV2(arrM,l, r){			
+
+			if(l>=r){
+				return;//returns recursively
+			}
+			var m =l+ parseInt((r-l)/2);
+			mergeSortV2(arrM,l,m);
+			mergeSortV2(arrM,m+1,r);
+			merge(arrM,l,m,r);
+		}
+
+		function mergeSort(){
+			sortedArray=[]//reset sortedArray - ***do this for all	sorting algorithms
+			sortedArray=Array.from(array);//kopjimi i vargut array ne sortedArray
+
+			mergeSortV2(sortedArray,0,arrLength-1);
+
+		}
+
+
+		/****endof mergesort code****/
+
+		/*multi-dimensional array creator function*/
+		function createArray(length) {
+    		var arr = new Array(length || 0),
+        	i = length;
+
+    		if (arguments.length > 1) {
+        	var args = Array.prototype.slice.call(arguments, 1);
+        	while(i--) arr[length-1 - i] = createArray.apply(this, args);
+   			}
+
+    	return arr;
+		}
+
+		/*save the state of array while being sorted, for later drawing*/
+		/*similar to saving snapshots for an animation*/
+		let index=0;
+		let marker=0;
+		let pivotMarker=-1;
+		let swap=false;
+		function drawRectsSort(indeksi,o,p, pivotM){
+			if(runningState==false){
+				//do nothing
+			}
+			else{
+				resetChart();
+		
+				if(indeksi==toDrawArr.length-1){
+				drawRectsSorting(toDrawArr[indeksi],o,p, pivotM );
+					clearInterval(stopId);
+					index=0;
+					markIndexes=[];
+					pivotQuickSortMarkers=[];
+					pivotMarker=-1;
+					marker=0;
+					runningState=false;
+					enabled=false;
+					clickedState=true;//so the button can't be clicked again while sorted arrays states are being drawn
+
+				}
+				else{
+					drawRectsSorting(toDrawArr[indeksi],o,p, pivotM);
+				}
+			
+			}
+		}
+		//calls function drawRectsSort() with an index for toDrawArr, and two indexes for drawRectsSorting function.
+		//purpose: draw each state of sorting process (each state represents a different array from 2D toDrawArray)
+		function generateSortingArray(){
+				if(clickedState==true){
+					//do nothing
+				}
+				else{
+					enabled=true;
+					if(runningState==true){//do nothing
+					}
+					else{
+						if(paused==true){
+							//don't choose a sorting algorithm, it is already chosen
+						}
+						else{
+							sortingAlgorithm();//the first call - uses the chosen sorting algorithm
+							//it sorts the array, and all the steps are saved in 2d array: toDrawArr[][]
+						}
+						stopId=setInterval(function fn(){drawRectsSort(index++,markIndexes[marker],markIndexes[marker+1], pivotQuickSortMarkers[pivotMarker++]),marker+=2},getSpeed());
+						paused=false;
+						runningState=true;
+
+					}
+				}
+
+				clickedState=true;
+			
+		}
+		//speedAnimation slider
+		var speedSlider = document.getElementById("myRange");
+			speedSlider.oninput = function() {
+			setSpeed(this.value);
+			}
+		
+
+		//set setInterval() function call speed in miliseconds
+		function setSpeed(s){
+			intSpeed=s;
+		}
+		function getSpeed(){
+			return intSpeed;
+		}
+		function setSortingAlgorithm(s){
+			sortSelection=s;	
+		}
+		function sortingAlgorithm(){
+			if(clickedState==true){
+				//clickedState means the function generateMyArray is running, we can't modify toDrawArr[][], which the selected sorting function does
+				//do nothing
+			}
+			else{//based on user's choice - call a sorting algorithm
+				if(sortSelection==1){
+					selectionSort();	
+				}
+				else if(sortSelection==2){
+					insertionSort();
+				
+				}
+				else if(sortSelection==3){
+					bubbleSort();
+				
+				}
+				else if(sortSelection==4){
+					quickSort();
+				
+				}
+				else if(sortSelection==5){
+					mergeSort();
+				
+				}
+			}
+		}
+		let paused=false;
+		function pause(){//pauses the animation
+			if(enabled==true){
+				if(runningState==true){
+					clearInterval(stopId);
+					paused=true;
+					runningState=false;
+				}
+			}
+		}
+		let firstCall=false;
+		function continueSorting(){//continues the animation or starts the animation
+				if(arrayWasGenerated==true){
+				if(firstCall==false){
+					generateSortingArray();
+					firstCall=true;
+					clickedState=false;
+				}
+				else{
+					if(enabled==true){
+						if(runningState==true){
+							//do nothing
+						}
+						else{
+							clickedState=false;
+							if(paused==false){
+								//do nothing
+							}
+							else{
+								generateSortingArray();
+
+							}
+						}
+					}
+				}
+
+			}
+		}
+		/***draw last state of array***/
+		function jumpToEnd(){
+			if(arrayWasGenerated==true){
+				resetChart();
+				sortingAlgorithm();
+				index=toDrawArr.length;
+				drawRectsSorting(toDrawArr[toDrawArr.length-1],markIndexes[markIndexes.length-2],markIndexes[markIndexes.length-1]);
+
+				index=0;
+				markIndexes=[];
+				pivotQuickSortMarkers=[];
+				marker=0;
+				pivotMarker=0;
+				runningState=false;
+				enabled=false;
+				clickedState=true;//so the button can't be clicked again while sorted arrays states are being drawn
+			}
+		}
+		function addCustomArr(x){//add a user input custom array
+			let ans=true;
+			let myArr=[];
+			let myString=x;
+
+			//seperate string by space
+			myArr=myString.split(" ");
+			if(myArr.length>40){
+				return false;
+			}
+			//check if list contains only numbers
+			for(var i=0;i<myArr.length;i++){
+				c=myArr[i].charCodeAt();
+				if(c<47 ||  c>58){
+					ans=false;
+					return ans;
+				}
+				else if(myArr[i]>999 || myArr[i]<0 || myArr.length<=1){
+					ans=false;
+					return ans;
+				}
+			}
+			let tempArr=myArr.map(Number);//convert array of string to array of ints
+			arrLength=tempArr.length;
+			generateMyCustomArray(tempArr);
+			return ans;
+
+		}
+		function addCustomArrValidate(){//validate the custom array
+			let x=document.getElementById("customArr").value;
+			if(x==""){
+				alert("Zero or 1 input has been given! Please enter the values for the array!");
+				return false;
+			}
+			else if(addCustomArr(x)==false){
+				alert("Array must contain integers [0-999] only and they must be separated by space! [num of integers <=40]");
+				return false;
+			}
+		}
+
+		//getArraysLenght
+		function getArrLength(){
+			var arrLen=document.getElementById("arrLength").value;
+			return arrLen;
+		}
+	
+	</script>
+
+</body>
+</html>

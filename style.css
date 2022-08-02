@@ -1,0 +1,144 @@
+/*sorting css*/
+body{
+	background-color: whitesmoke;
+	width: auto;
+	height: 100%;
+
+}
+.buttons{
+	margin: auto;
+	padding: 5px;
+}
+.content{
+	position: absolute;
+	height: auto;
+   	width: 900px;
+    top: auto;
+    left: 18%;
+    right: 15%;
+    margin-top: auto;
+    border: 1px solid black;
+    margin-bottom: 20px;
+}
+#svgDiv{
+	display: table;
+	height: 500px;
+	margin: 0px auto;
+
+}
+#sortSvg{
+	border-top: 6px solid #DDB620;
+	width: 800px;
+	height: 550px;
+	padding: 10px 10px;
+
+}
+
+.rects{
+	x: 0%;
+	y: 10px;
+	width: 15px;
+	fill:rgb(100,50,50);
+	stroke-width:1;
+	stroke:rgb(0,0,0);
+	margin-top: 10px;
+
+}
+#selectButton{margin: 5px;}
+#selectButton:focus{
+	background-color: #DDB620;
+}
+.slideButtons{
+	padding: 5px 8px;
+	border-radius: 4px;
+	font-size: 11px;
+}
+.txt-label{
+	height: 15px;
+	x: 0%;
+	
+}
+.footer{
+	position: absolute;
+	margin-top: auto;
+	bottom: 0px;
+	width: 100%;
+}
+.bookmarks{
+	position: absolute;
+	margin-right:10px;
+	padding-right:10px;
+}
+.docs{
+	position: absolute;
+	left: 350px;
+	padding: 10px 20px;
+	border-left: 1px dotted black;
+}
+
+/*speed slider css*/
+.speedSlider {
+  -webkit-appearance: none;
+  width: 10%;
+  height: 10px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.speedSlider:hover {
+  opacity: 1;
+}
+
+.speedSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 20px;
+  background: #DDB620;
+  cursor: pointer;
+}
+
+.speedSlider::-moz-range-thumb {
+  width: 15px;
+  height: 20px;
+  background: #DDB620;
+  cursor: pointer;
+}
+/*endof speed slider css*/
+/*custom array tooltip*/
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 280px;
+  background-color: gray;
+  color: whitesmoke;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 50%;
+  margin-left: -60px;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+/*endof customarray tooltip*/
+.aTitle{
+	text-decoration: none;
+}
+.aTitle:visited{
+	color: orange;
+}
